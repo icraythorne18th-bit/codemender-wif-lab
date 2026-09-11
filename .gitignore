@@ -1,0 +1,14 @@
+node_modules/
+npm-debug.log
+.DS_Store
+.env
+.cm_project/
+*.patch
+*.log
+
+# CodeMender workspace and local scan artifacts.
+# Keeps `cm init` state and Semgrep intermediates out of both the learner's
+# local commits and the autonomous remediation pull request.
+.codemender/
+semgrep.json
+cm-findings.json
