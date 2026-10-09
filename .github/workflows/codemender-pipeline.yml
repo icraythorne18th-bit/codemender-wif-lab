@@ -47,9 +47,9 @@ permissions:
 #              still reports everything it finds; this only caps the expensive
 #              agentic work that follows.
 env:
-  SCAN_PATH: src/services
+  SCAN_PATH: src/services/admin.service.js
   CM_BUNDLED: lab/bin/cm-linux
-  CM_MODEL: gemini-3.7-flash
+  CM_MODEL: gemini-3.8-flash
   CM_LIMIT: "1"
 
 jobs:
@@ -229,10 +229,11 @@ jobs:
               "$RUNNER_TEMP/fix-$FID.cm.log" > "$RUNNER_TEMP/fix-$FID.patch" || true
 
             if [ -s "$RUNNER_TEMP/fix-$FID.patch" ]; then
+              SCAN_DIR="$(if [ -d "$SCAN_PATH" ]; then echo "$SCAN_PATH"; else dirname "$SCAN_PATH"; fi)"
               if git apply --check -p1 "$RUNNER_TEMP/fix-$FID.patch" 2>/dev/null; then
                 git apply -p1 "$RUNNER_TEMP/fix-$FID.patch"
-              elif git apply --check -p1 --directory="$SCAN_PATH" "$RUNNER_TEMP/fix-$FID.patch" 2>/dev/null; then
-                git apply -p1 --directory="$SCAN_PATH" "$RUNNER_TEMP/fix-$FID.patch"
+              elif git apply --check -p1 --directory="$SCAN_DIR" "$RUNNER_TEMP/fix-$FID.patch" 2>/dev/null; then
+                git apply -p1 --directory="$SCAN_DIR" "$RUNNER_TEMP/fix-$FID.patch"
               fi
             fi
             echo "::endgroup::"
