@@ -130,17 +130,7 @@ jobs:
           if ! grep -q 'type: "git"' "$CONFIG" 2>/dev/null && ! grep -q 'type: git' "$CONFIG" 2>/dev/null; then
             printf '\nvcs:\n  type: git\n' >> "$CONFIG"
           fi
-          cat << 'EOF' > "$HOME/.codemender/command_policy.yaml"
-block:
-  - sudo
-  - su
-  - mkfs
-  - dd
-  - reboot
-  - shutdown
-block_patterns:
-  - '\bgit\s+(push|commit|rebase|reset\s+--hard)\b'
-EOF
+          printf 'block:\n  - sudo\n  - su\n  - mkfs\n  - dd\n  - reboot\n  - shutdown\nblock_patterns:\n  - "\\bgit\\s+(push|commit|rebase|reset\\s+--hard)\\b"\n' > "$HOME/.codemender/command_policy.yaml"
           echo "Sandbox scoped to: $GITHUB_WORKSPACE"
 
       - name: CodeMender Scan
