@@ -4,6 +4,7 @@ npm-debug.log
 .env
 *.patch
 *.log
+package-lock.json
 
 # CodeMender workspace and local scan artifacts.
 # Keeps `cm init` state and Semgrep intermediates out of both the learner's
