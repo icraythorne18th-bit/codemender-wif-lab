@@ -92,19 +92,6 @@ jobs:
           echo "$RUNNER_TEMP/cmbin" >> "$GITHUB_PATH"
           "$RUNNER_TEMP/cmbin/cm" --version
 
-      # Install project dependencies before any agent runs. This is purely a
-      # speed optimization, not a correctness requirement.
-      #
-      # Without it, cm verify cannot resolve express while building its
-      # exploit harness, and the agent responds by searching the entire
-      # filesystem for it.
-      #
-      # node_modules/ is in .gitignore, so it survives the git clean -fd
-      # workspace reset that runs before every agent command. Install once
-      # here and it stays available for find, verify and fix alike.
-      - name: Install Application Dependencies
-        run: npm install --no-audit --no-fund || true
-
       # Creates the .codemender/ workspace and local findings database, then
       # tells cm two things about this project: where it lives, and how to
       # undo changes to it.
@@ -143,6 +130,17 @@ jobs:
           if ! grep -q 'type: "git"' "$CONFIG" 2>/dev/null && ! grep -q 'type: git' "$CONFIG" 2>/dev/null; then
             printf '\nvcs:\n  type: git\n' >> "$CONFIG"
           fi
+          cat << 'EOF' > "$HOME/.codemender/command_policy.yaml"
+block:
+  - sudo
+  - su
+  - mkfs
+  - dd
+  - reboot
+  - shutdown
+block_patterns:
+  - '\bgit\s+(push|commit|rebase|reset\s+--hard)\b'
+EOF
           echo "Sandbox scoped to: $GITHUB_WORKSPACE"
 
       - name: CodeMender Scan
@@ -174,6 +172,13 @@ jobs:
         id: triage
         run: |
           python3 .github/scripts/cm_triage.py "$RUNNER_TEMP/cm-security-report.json"
+
+      # Install project dependencies right before verification and remediation.
+      # Keeping node_modules out of the workspace during cm find prevents
+      # grep_search from having to traverse thousands of third-party library files.
+      - name: Install Application Dependencies
+        if: steps.triage.outputs.fix_ids != ''
+        run: npm install --no-audit --no-fund || true
 
       # Walk the queue, confirm each finding is real, and patch the ones that
       # survive. Stops after CM_LIMIT findings.
