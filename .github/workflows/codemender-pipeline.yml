@@ -29,7 +29,8 @@ on:
 permissions:
   contents: write          # push the remediation branch
   pull-requests: write     # open the autonomous remediation PR
-  id-token: write
+  id-token: write          # keyless WIF authentication
+  security-events: write   # upload SARIF to GitHub Code Scanning
   #
   # FIXME 1: One permission is missing, and it is the one that makes keyless
   #   authentication possible. Without it GitHub refuses to mint the OIDC
@@ -312,6 +313,26 @@ jobs:
           name: codemender-html-report
           path: ${{ runner.temp }}/codemender-report.html
           if-no-files-found: ignore
+
+      # Render native Markdown report directly on the GitHub Actions job summary page
+      - name: Publish Security Report to Job Summary
+        if: always()
+        run: |
+          echo "## 🛡️ CodeMender Security Guardrail Report" >> "$GITHUB_STEP_SUMMARY"
+          cm report -f md -y >> "$GITHUB_STEP_SUMMARY" || true
+
+      # Export SARIF and upload to GitHub Code Scanning (Security Tab & PR annotations)
+      - name: Export SARIF Security Report
+        if: always()
+        run: |
+          cm report -f sarif -y > "$RUNNER_TEMP/codemender.sarif" || true
+
+      - name: Upload SARIF to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: ${{ runner.temp }}/codemender.sarif
+          category: codemender
 
       # Summarize LLM token usage across all commands executed in this run.
       - name: CodeMender Token Usage Stats
