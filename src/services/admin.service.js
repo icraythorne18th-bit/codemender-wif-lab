@@ -1,5 +1,6 @@
 const systemUtils = require('../core/utils/systemUtils');
 
+// Demo: Admin network diagnostic ping provider
 exports.pingProvider = (ip, opts, cb) => {
     systemUtils.executeNetworkDiagnostic(ip, opts, cb);
 };
