@@ -1,0 +1,8 @@
+# CodeMender Scan Ignore Rules
+lab/
+node_modules/
+.git/
+.github/
+docs/
+*.md
+package-lock.json
