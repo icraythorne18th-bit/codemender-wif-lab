@@ -1,18 +1,5 @@
 # =============================================================================
-# CodeMender CI/CD Guardrail: STARTER PIPELINE
-# =============================================================================
-# This pipeline is almost complete. Three things are missing, marked FIXME 1,
-# FIXME 2 and FIXME 3 below.
-#
-# It lives under lab/templates/ (outside .github/workflows/) so GitHub Actions
-# never picks it up. Copy it into place, then fix the three gaps:
-#
-#     mkdir -p .github/workflows
-#     cp lab/templates/codemender-pipeline.template.yaml \
-#        .github/workflows/codemender-pipeline.yml
-#
-# A completed reference lives at lab/solutions/codemender-pipeline.solution.yaml.
-# Try the three FIXMEs yourself first, then diff the two files.
+# CodeMender CI/CD Security Guardrail Pipeline
 # =============================================================================
 
 name: CodeMender CI/CD Guardrail
@@ -31,15 +18,6 @@ permissions:
   pull-requests: write     # open the autonomous remediation PR
   id-token: write          # keyless WIF authentication
   security-events: write   # upload SARIF to GitHub Code Scanning
-  #
-  # FIXME 1: One permission is missing, and it is the one that makes keyless
-  #   authentication possible. Without it GitHub refuses to mint the OIDC
-  #   token, and the auth step below fails with:
-  #
-  #       Unable to get ACTIONS_ID_TOKEN_REQUEST_URL
-  #
-  #   Add it here, following the same `scope: access-level` pattern as the two
-  #   lines above. The scope name is the one GitHub uses for OIDC ID tokens.
 
 # Settings shared by every step below.
 #   SCAN_PATH  one directory. The scan covers everything under it, and keeping
@@ -231,18 +209,7 @@ jobs:
             fi
 
             echo "::group::Fix $FID"
-            # FIXME 3: Replace FLAGS_GO_HERE. The cm verify call above is a
-            #   worked example, and this command takes exactly the same flags
-            #   for exactly the same reasons.
-            #
-            #   The rule worth remembering: any cm command that lets the agent
-            #   run commands or write files needs both -y and --bypass-warning.
-            #   That is verify and fix. cm find in FIXME 2 does not, because a
-            #   scan is read-only: FIND mode has those tools switched off, so
-            #   the warning never triggers.
-            #
-            #   Do not add --unrestricted. project_paths already gave the agent
-            #   this whole repository.
+            # Synthesize verified remediation patch for the confirmed finding.
             cm fix "$FID" -y --bypass-warning --model "$CM_MODEL" 2>&1 | tee "$RUNNER_TEMP/fix-$FID.cm.log" || true
 
             # Safety net: if cm did not edit the files directly, recover the
