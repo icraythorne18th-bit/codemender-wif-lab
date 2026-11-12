@@ -134,7 +134,7 @@ jobs:
       - name: CodeMender Scan
         id: scan
         run: |
-          cm find "$SCAN_PATH" -y --model "$CM_MODEL" \
+          cm find "$SCAN_PATH" -y --bypass-warning --model "$CM_MODEL" \
             -c "Analyze $SCAN_PATH for remote command injection and untrusted input execution in admin endpoints. Do not explore outside src/." \
             2>&1 | tee "$RUNNER_TEMP/cm-find.cm.log"
 
